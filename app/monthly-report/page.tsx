@@ -56,17 +56,6 @@ export default function MonthlyReportPage() {
     { this_mun: 0, other_mun: 0, other_prov: 0, foreign: 0, unspecified: 0 }
   );
 
-  // Calculate grand totals for the analytics cards below
-  const grandTotalThisMun = records.reduce((sum, r) => sum + (r.this_mun_male || 0) + (r.this_mun_female || 0), 0);
-  const grandTotalOtherMun = records.reduce((sum, r) => sum + (r.other_mun_male || 0) + (r.other_mun_female || 0), 0);
-  const grandTotalOtherProv = records.reduce((sum, r) => sum + (r.other_prov_male || 0) + (r.other_prov_female || 0), 0);
-  const grandTotalForeign = records.reduce((sum, r) => sum + (r.foreign_male || 0) + (r.foreign_female || 0), 0);
-  const grandTotalUnspecified = records.reduce((sum, r) => sum + (r.unspecified_male || 0) + (r.unspecified_female || 0), 0);
-
-  const overallTotal = grandTotalThisMun + grandTotalOtherMun + grandTotalOtherProv + grandTotalForeign + grandTotalUnspecified;
-  const totalMale = records.reduce((sum, r) => sum + (r.this_mun_male || 0) + (r.other_mun_male || 0) + (r.other_prov_male || 0) + (r.foreign_male || 0) + (r.unspecified_male || 0), 0);
-  const totalFemale = records.reduce((sum, r) => sum + (r.this_mun_female || 0) + (r.other_mun_female || 0) + (r.other_prov_female || 0) + (r.foreign_female || 0) + (r.unspecified_female || 0), 0);
-
   return (
     <div className="p-8 max-w-7xl mx-auto">
       {/* Header */}
@@ -133,7 +122,7 @@ export default function MonthlyReportPage() {
       </div>
 
       {/* Data Table */}
-      <div className="bg-[#18181b] border border-zinc-800 rounded-xl overflow-hidden mb-8">
+      <div className="bg-[#18181b] border border-zinc-800 rounded-xl overflow-hidden mb-12">
         <div className="grid grid-cols-6 bg-[#27272a] px-6 py-4 text-xs font-semibold text-zinc-400 uppercase tracking-wider text-center">
           <div className="text-left">Tourist Attraction</div>
           <div>This Municipality</div>
@@ -186,56 +175,6 @@ export default function MonthlyReportPage() {
             </div>
           </div>
         )}
-      </div>
-
-      {/* Three Analytics Cards Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 flex flex-col items-center justify-center min-h-[220px]">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-6">Male vs Female Visitors</h3>
-          <div className="relative w-32 h-32 rounded-full border-4 border-amber-500/20 flex items-center justify-center">
-            <div className="text-center">
-              <span className="text-xl font-bold text-white">{overallTotal}</span>
-              <div className="text-[10px] text-zinc-400">M: {totalMale} | F: {totalFemale}</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 flex flex-col items-center justify-center min-h-[220px]">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-6">Detailed Residence Breakdown</h3>
-          <div className="flex gap-4 text-xs text-zinc-400 items-center justify-center flex-wrap">
-            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-amber-500"></span> Local: {grandTotalThisMun}</div>
-            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-blue-500"></span> Other Mun: {grandTotalOtherMun}</div>
-            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-emerald-500"></span> Other Prov: {grandTotalOtherProv}</div>
-          </div>
-        </div>
-
-        <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 flex flex-col items-center justify-center min-h-[220px]">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-6">Domestic vs Foreign Tourists</h3>
-          <div className="flex gap-6 text-center">
-            <div>
-              <div className="text-lg font-bold text-white">{grandTotalThisMun + grandTotalOtherMun + grandTotalOtherProv}</div>
-              <div className="text-xs text-zinc-500">Domestic</div>
-            </div>
-            <div className="border-r border-zinc-800"></div>
-            <div>
-              <div className="text-lg font-bold text-amber-500">{grandTotalForeign}</div>
-              <div className="text-xs text-zinc-500">Foreign</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Yearly Trend Chart Box */}
-      <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 mb-12">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-400 text-center mb-8">Visitors Per Month (Yearly Trend)</h3>
-        <div className="h-40 flex items-end justify-between px-4 border-b border-zinc-800 pb-2">
-          {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map((m) => (
-            <div key={m} className="flex flex-col items-center gap-2 flex-1">
-              <div className="w-4 bg-zinc-800 rounded-t h-2 hover:bg-amber-500 transition-colors"></div>
-              <span className="text-[10px] text-zinc-500">{m}</span>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );
