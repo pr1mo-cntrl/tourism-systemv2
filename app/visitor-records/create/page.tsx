@@ -460,12 +460,13 @@ export default function CreateVisitorRecord() {
     const { error } = await supabase
       .from("visitor_records")
       .insert([{
-        month, 
-        year, 
-        municipality, 
-        attraction_name: attractionName.toUpperCase(), 
+        month,
+        year,
+        municipality,
+        municipality_name: municipality, // <-- ADD THIS LINE RIGHT HERE
+        attraction_name: attractionName.toUpperCase(),
         attraction_code: attractionCode,
-        this_mun_male: thisMunM, 
+        this_mun_male: thisMunM,
         this_mun_female: thisMunF,
         other_mun_male: otherMunM, 
         other_mun_female: otherMunF,
