@@ -23,7 +23,7 @@ export default function RootLayout({
           // Standard dashboard layout with sidebar
           <>
             {/* Sidebar */}
-            <aside className="w-64 bg-[#121214] border-r border-zinc-800 flex flex-col justify-between p-4 shrink-0">
+            <aside className="w-64 bg-[#121214] border-r border-zinc-800 flex flex-col justify-between p-4 shrink-0 h-screen sticky top-0">
               <div>
                 <div className="flex items-center gap-2 px-2 py-4 mb-6">
                   <span className="text-xl font-black tracking-wider text-white">TOURISM</span>
