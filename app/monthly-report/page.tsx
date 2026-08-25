@@ -11,21 +11,11 @@ export default function MonthlyReportPage() {
   const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // All 13 official municipalities of Benguet (excluding Baguio City)
-  const benguetMunicipalities = [
+  // Original municipalities dropdown list
+  const municipalitiesList = [
     "Atok",
-    "Bakun",
-    "Bokod",
-    "Buguias",
-    "Itogon",
-    "Kabayan",
-    "Kapangan",
-    "Kibungan",
     "La Trinidad",
-    "Mankayan",
-    "Sablan",
-    "Tuba",
-    "Tublay"
+    "Baguio City"
   ];
 
   const monthsList = [
@@ -41,7 +31,6 @@ export default function MonthlyReportPage() {
   useEffect(() => {
     const fetchReportData = async () => {
       setLoading(true);
-      // Using .ilike for case-insensitive matching (fixes database casing mismatches)
       const { data, error } = await supabase
         .from("visitor_records")
         .select("*")
@@ -157,7 +146,7 @@ export default function MonthlyReportPage() {
             onChange={(e) => setMunicipality(e.target.value)}
             className="w-full bg-[#27272a] border border-zinc-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-amber-500"
           >
-            {benguetMunicipalities.map((mun) => (
+            {municipalitiesList.map((mun) => (
               <option key={mun} value={mun}>{mun}</option>
             ))}
           </select>
