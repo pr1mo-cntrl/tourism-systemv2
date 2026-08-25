@@ -5,7 +5,7 @@ import { useState, useMemo } from "react";
 export default function MonthlyReportClient({ initialRecords }: { initialRecords: any[] }) {
   const [month, setMonth] = useState("AUGUST");
   const [year, setYear] = useState("2026");
-  const [municipality, setMunicipality] = useState("Atok");
+  const [municipality, setMunicipality] = useState("La Trinidad");
 
   const municipalitiesList = [
     "Atok", "Bakun", "Bokod", "Buguias", "Itogon", "Kabayan",
@@ -18,13 +18,22 @@ export default function MonthlyReportClient({ initialRecords }: { initialRecords
     "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
   ];
 
-  // Filter records based on selected dropdowns (case-insensitive for safety)
+  // Bulletproof filtering: case-insensitive and trims whitespace
   const filteredRecords = useMemo(() => {
-    return initialRecords.filter((r) => 
-      r.month?.toUpperCase() === month.toUpperCase() &&
-      r.year?.toString() === year &&
-      r.municipality?.toUpperCase() === municipality.toUpperCase()
-    );
+    if (!initialRecords || !Array.isArray(initialRecords)) return [];
+    
+    return initialRecords.filter((r) => {
+      const dbMonth = (r.month || "").trim().toUpperCase();
+      const filterMonth = month.trim().toUpperCase();
+      
+      const dbYear = (r.year || "").toString().trim();
+      const filterYear = year.trim();
+      
+      const dbMun = (r.municipality || "").trim().toUpperCase();
+      const filterMun = municipality.trim().toUpperCase();
+
+      return dbMonth === filterMonth && dbYear === filterYear && dbMun === filterMun;
+    });
   }, [initialRecords, month, year, municipality]);
 
   // Aggregate stats for Table Totals
@@ -134,53 +143,53 @@ export default function MonthlyReportClient({ initialRecords }: { initialRecords
             {filteredRecords.map((rec, i) => (
               <div key={rec.id || i} className="grid grid-cols-6 px-6 py-4 border-b border-zinc-800 items-center text-center text-sm">
                 <div className="text-left">
-                  <div className="font-bold text-white">{rec.name || rec.attraction_name}</div>
-                  <div className="text-xs text-zinc-500">Code: {rec.code || rec.attraction_code || 'N/A'}</div>
+                  <div className="font-bold text-white uppercase">{rec.name || rec.attraction_name}</div>
+                  <div className="text-xs text-zinc-500 mt-0.5">Code: {rec.code || rec.attraction_code || 'N/A'}</div>
                 </div>
                 <div className="text-zinc-300">
-                  <span className="font-bold text-white">{(rec.this_mun_male || 0) + (rec.this_mun_female || 0)}</span>
-                  <div className="text-xs text-zinc-500">M: {rec.this_mun_male || 0} | F: {rec.this_mun_female || 0}</div>
+                  <span className="font-bold text-white text-base">{(rec.this_mun_male || 0) + (rec.this_mun_female || 0)}</span>
+                  <div className="text-[10px] text-zinc-500">M: {rec.this_mun_male || 0} | F: {rec.this_mun_female || 0}</div>
                 </div>
                 <div className="text-zinc-300">
-                  <span className="font-bold text-white">{(rec.other_mun_male || 0) + (rec.other_mun_female || 0)}</span>
-                  <div className="text-xs text-zinc-500">M: {rec.other_mun_male || 0} | F: {rec.other_mun_female || 0}</div>
+                  <span className="font-bold text-white text-base">{(rec.other_mun_male || 0) + (rec.other_mun_female || 0)}</span>
+                  <div className="text-[10px] text-zinc-500">M: {rec.other_mun_male || 0} | F: {rec.other_mun_female || 0}</div>
                 </div>
                 <div className="text-zinc-300">
-                  <span className="font-bold text-white">{(rec.other_prov_male || 0) + (rec.other_prov_female || 0)}</span>
-                  <div className="text-xs text-zinc-500">M: {rec.other_prov_male || 0} | F: {rec.other_prov_female || 0}</div>
+                  <span className="font-bold text-white text-base">{(rec.other_prov_male || 0) + (rec.other_prov_female || 0)}</span>
+                  <div className="text-[10px] text-zinc-500">M: {rec.other_prov_male || 0} | F: {rec.other_prov_female || 0}</div>
                 </div>
                 <div className="text-zinc-300">
-                  <span className="font-bold text-white">{(rec.foreign_male || 0) + (rec.foreign_female || 0)}</span>
-                  <div className="text-xs text-zinc-500">M: {rec.foreign_male || 0} | F: {rec.foreign_female || 0}</div>
+                  <span className="font-bold text-white text-base">{(rec.foreign_male || 0) + (rec.foreign_female || 0)}</span>
+                  <div className="text-[10px] text-zinc-500">M: {rec.foreign_male || 0} | F: {rec.foreign_female || 0}</div>
                 </div>
                 <div className="text-zinc-300">
-                  <span className="font-bold text-white">{(rec.unspecified_male || 0) + (rec.unspecified_female || 0)}</span>
-                  <div className="text-xs text-zinc-500">M: {rec.unspecified_male || 0} | F: {rec.unspecified_female || 0}</div>
+                  <span className="font-bold text-white text-base">{(rec.unspecified_male || 0) + (rec.unspecified_female || 0)}</span>
+                  <div className="text-[10px] text-zinc-500">M: {rec.unspecified_male || 0} | F: {rec.unspecified_female || 0}</div>
                 </div>
               </div>
             ))}
 
             <div className="grid grid-cols-6 px-6 py-4 bg-[#18181b] items-center text-center font-bold text-white">
-              <div className="text-left uppercase">Total of this month:</div>
+              <div className="text-left uppercase text-sm">TOTAL OF THIS MONTH:</div>
               <div>
-                <div>{tableTotals.this_mun}</div>
-                <div className="text-xs text-zinc-500 font-normal">M: {tableTotals.this_mun_m} | F: {tableTotals.this_mun_f}</div>
+                <div className="text-lg text-amber-500">{tableTotals.this_mun}</div>
+                <div className="text-[10px] text-zinc-500 font-normal mt-0.5">M: {tableTotals.this_mun_m} | F: {tableTotals.this_mun_f}</div>
               </div>
               <div>
-                <div>{tableTotals.other_mun}</div>
-                <div className="text-xs text-zinc-500 font-normal">M: {tableTotals.other_mun_m} | F: {tableTotals.other_mun_f}</div>
+                <div className="text-lg text-amber-500">{tableTotals.other_mun}</div>
+                <div className="text-[10px] text-zinc-500 font-normal mt-0.5">M: {tableTotals.other_mun_m} | F: {tableTotals.other_mun_f}</div>
               </div>
               <div>
-                <div>{tableTotals.other_prov}</div>
-                <div className="text-xs text-zinc-500 font-normal">M: {tableTotals.other_prov_m} | F: {tableTotals.other_prov_f}</div>
+                <div className="text-lg text-amber-500">{tableTotals.other_prov}</div>
+                <div className="text-[10px] text-zinc-500 font-normal mt-0.5">M: {tableTotals.other_prov_m} | F: {tableTotals.other_prov_f}</div>
               </div>
               <div>
-                <div>{tableTotals.foreign}</div>
-                <div className="text-xs text-zinc-500 font-normal">M: {tableTotals.foreign_m} | F: {tableTotals.foreign_f}</div>
+                <div className="text-lg text-amber-500">{tableTotals.foreign}</div>
+                <div className="text-[10px] text-zinc-500 font-normal mt-0.5">M: {tableTotals.foreign_m} | F: {tableTotals.foreign_f}</div>
               </div>
               <div>
-                <div>{tableTotals.unspec}</div>
-                <div className="text-xs text-zinc-500 font-normal">M: {tableTotals.unspec_m} | F: {tableTotals.unspec_f}</div>
+                <div className="text-lg text-amber-500">{tableTotals.unspec}</div>
+                <div className="text-[10px] text-zinc-500 font-normal mt-0.5">M: {tableTotals.unspec_m} | F: {tableTotals.unspec_f}</div>
               </div>
             </div>
           </div>
@@ -193,8 +202,8 @@ export default function MonthlyReportClient({ initialRecords }: { initialRecords
           <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-6">Male vs Female Visitors</h3>
           <div className="relative w-32 h-32 rounded-full border-4 border-amber-500/20 flex items-center justify-center">
             <div className="text-center">
-              <span className="text-xl font-bold text-white">{grandTotal}</span>
-              <div className="text-[10px] text-zinc-400">M: {totalMale} | F: {totalFemale}</div>
+              <span className="text-3xl font-bold text-white">{grandTotal}</span>
+              <div className="text-[10px] text-zinc-400 mt-1">M: {totalMale} | F: {totalFemale}</div>
             </div>
           </div>
         </div>
@@ -212,13 +221,13 @@ export default function MonthlyReportClient({ initialRecords }: { initialRecords
           <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-6">Domestic vs Foreign Tourists</h3>
           <div className="flex gap-6 text-center">
             <div>
-              <div className="text-lg font-bold text-white">{totalDomestic}</div>
-              <div className="text-xs text-zinc-500">Domestic</div>
+              <div className="text-2xl font-bold text-white">{totalDomestic}</div>
+              <div className="text-xs text-zinc-500 mt-1">Domestic</div>
             </div>
             <div className="border-r border-zinc-800"></div>
             <div>
-              <div className="text-lg font-bold text-amber-500">{totalForeign}</div>
-              <div className="text-xs text-zinc-500">Foreign</div>
+              <div className="text-2xl font-bold text-amber-500">{totalForeign}</div>
+              <div className="text-xs text-zinc-500 mt-1">Foreign</div>
             </div>
           </div>
         </div>
