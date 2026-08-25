@@ -1,286 +1,228 @@
 "use client";
 
-import { useState } from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { useState, useMemo } from "react";
+
 export default function MonthlyReportClient({ initialRecords }: { initialRecords: any[] }) {
-  // 1. Filter States
   const [month, setMonth] = useState("AUGUST");
   const [year, setYear] = useState("2026");
-  const [municipality, setMunicipality] = useState("La Trinidad");
+  const [municipality, setMunicipality] = useState("Atok");
 
- // 2. Filter the data based on dropdowns (Case-Insensitive AND Whitespace-Proof)
-  const filteredRecords = initialRecords.filter((record) => {
-    const dbMonth = (record.month || "").toString().trim().toUpperCase();
-    const dbYear = (record.year || "").toString().trim();
-    const dbMuni = (record.municipality || "").toString().trim().toUpperCase();
-    
-    const filterMonth = month.trim().toUpperCase();
-    const filterYear = year.trim();
-    const filterMuni = municipality.trim().toUpperCase();
+  const municipalitiesList = [
+    "Atok", "Bakun", "Bokod", "Buguias", "Itogon", "Kabayan",
+    "Kapangan", "Kibungan", "La Trinidad", "Mankayan", "Sablan",
+    "Tuba", "Tublay"
+  ];
 
-    return dbMonth === filterMonth && dbYear === filterYear && dbMuni === filterMuni;
+  const monthsList = [
+    "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
+    "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
+  ];
+
+  // Filter records based on selected dropdowns (case-insensitive for safety)
+  const filteredRecords = useMemo(() => {
+    return initialRecords.filter((r) => 
+      r.month?.toUpperCase() === month.toUpperCase() &&
+      r.year?.toString() === year &&
+      r.municipality?.toUpperCase() === municipality.toUpperCase()
+    );
+  }, [initialRecords, month, year, municipality]);
+
+  // Aggregate stats for Table Totals
+  const tableTotals = filteredRecords.reduce((acc, curr) => {
+    acc.this_mun += (curr.this_mun_male || 0) + (curr.this_mun_female || 0);
+    acc.this_mun_m += (curr.this_mun_male || 0);
+    acc.this_mun_f += (curr.this_mun_female || 0);
+
+    acc.other_mun += (curr.other_mun_male || 0) + (curr.other_mun_female || 0);
+    acc.other_mun_m += (curr.other_mun_male || 0);
+    acc.other_mun_f += (curr.other_mun_female || 0);
+
+    acc.other_prov += (curr.other_prov_male || 0) + (curr.other_prov_female || 0);
+    acc.other_prov_m += (curr.other_prov_male || 0);
+    acc.other_prov_f += (curr.other_prov_female || 0);
+
+    acc.foreign += (curr.foreign_male || 0) + (curr.foreign_female || 0);
+    acc.foreign_m += (curr.foreign_male || 0);
+    acc.foreign_f += (curr.foreign_female || 0);
+
+    acc.unspec += (curr.unspecified_male || 0) + (curr.unspecified_female || 0);
+    acc.unspec_m += (curr.unspecified_male || 0);
+    acc.unspec_f += (curr.unspecified_female || 0);
+
+    return acc;
+  }, {
+    this_mun: 0, this_mun_m: 0, this_mun_f: 0,
+    other_mun: 0, other_mun_m: 0, other_mun_f: 0,
+    other_prov: 0, other_prov_m: 0, other_prov_f: 0,
+    foreign: 0, foreign_m: 0, foreign_f: 0,
+    unspec: 0, unspec_m: 0, unspec_f: 0
   });
 
-  // 3. Calculate Totals for the Table Footer
-  const totalPh = filteredRecords.reduce((sum, r) => sum + (r.ga_ph_count || 0), 0);
-  const totalForeign = filteredRecords.reduce((sum, r) => sum + (r.ga_non_fil_count || 0), 0);
-  const totalOverseas = filteredRecords.reduce((sum, r) => sum + (r.ga_overseas_filipinos || 0), 0);
-  const totalUnspecified = filteredRecords.reduce((sum, r) => sum + (r.ga_unspecified || 0), 0);
-
-  // 4. Calculate Yearly Trend Data (with Bulletproof Filters!)
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const filterYear = year.toString().trim();
-  const filterMuni = municipality.toString().trim().toUpperCase();
-
-  const yearlyData = months.map(m => {
-    const targetMonthPrefix = m.toUpperCase(); // "JAN", "FEB", etc.
-
-    // Filter records safely for the specific month in the loop
-    const monthRecords = initialRecords.filter(r => {
-       const dbMonthPrefix = (r.month || "").toString().trim().substring(0, 3).toUpperCase();
-       const dbYear = (r.year || "").toString().trim();
-       const dbMuni = (r.municipality || "").toString().trim().toUpperCase();
-
-       return dbMonthPrefix === targetMonthPrefix && dbYear === filterYear && dbMuni === filterMuni;
-    });
-
-    const totalVisitors = monthRecords.reduce((sum, r) => sum + (r.ga_ph_count || 0) + (r.ga_non_fil_count || 0) + (r.ga_overseas_filipinos || 0) + (r.ga_unspecified || 0), 0);
-    return { name: m, visitors: totalVisitors };
-  });
-
-  // 5. Chart 1: Male vs Female (Using a 50/50 split of total guests for visual testing until exact columns are added)
-  const totalAllGuests = totalPh + totalForeign + totalOverseas + totalUnspecified;
-  const genderData = [
-    { name: 'Male', value: Math.floor(totalAllGuests * 0.5), color: '#a855f7' }, // Purple
-    { name: 'Female', value: Math.ceil(totalAllGuests * 0.5), color: '#ec4899' }, // Pink
-  ].filter(d => d.value > 0);
-
-  // 6. Chart 2: Detailed Residence Breakdown
-  const residenceData = [
-    { name: 'PH Residents', value: totalPh, color: '#3b82f6' }, // Blue
-    { name: 'Overseas Filipinos', value: totalOverseas, color: '#f59e0b' }, // Amber
-    { name: 'Foreign', value: totalForeign, color: '#ef4444' }, // Red
-    { name: 'Unspecified', value: totalUnspecified, color: '#71717a' }, // Gray
-  ].filter(d => d.value > 0);
-
-  // 7. Chart 3: Domestic vs Foreign
-  const domesticTotal = totalPh + totalOverseas;
-  const domVsForData = [
-    { name: 'Domestic (Local + Prov)', value: domesticTotal, color: '#10b981' }, // Green
-    { name: 'Foreign', value: totalForeign, color: '#ef4444' }, // Red
-    { name: 'Unspecified', value: totalUnspecified, color: '#71717a' }, // Gray
-  ].filter(d => d.value > 0);
+  // Calculate totals for Analytics Cards
+  const totalLocal = tableTotals.this_mun;
+  const totalOtherMun = tableTotals.other_mun;
+  const totalOtherProv = tableTotals.other_prov;
+  const totalDomestic = totalLocal + totalOtherMun + totalOtherProv;
+  const totalForeign = tableTotals.foreign;
+  
+  const totalMale = tableTotals.this_mun_m + tableTotals.other_mun_m + tableTotals.other_prov_m + tableTotals.foreign_m + tableTotals.unspec_m;
+  const totalFemale = tableTotals.this_mun_f + tableTotals.other_mun_f + tableTotals.other_prov_f + tableTotals.foreign_f + tableTotals.unspec_f;
+  const grandTotal = totalMale + totalFemale;
 
   return (
-    <div className="mt-6">
-      
-      {/* FILTER DROPDOWNS */}
-      <div className="flex flex-wrap gap-6 mb-10">
+    <>
+      {/* Filters */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 pt-4">
         <div>
-          <label className="block text-zinc-400 text-xs font-bold mb-2 uppercase">Month</label>
-          <select value={month} onChange={(e) => setMonth(e.target.value)} className="bg-[#18181b] border border-zinc-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500 min-w-[150px]">
-            <option value="JANUARY">JANUARY</option>
-            <option value="FEBRUARY">FEBRUARY</option>
-            <option value="MARCH">MARCH</option>
-            <option value="APRIL">APRIL</option>
-            <option value="MAY">MAY</option>
-            <option value="JUNE">JUNE</option>
-            <option value="JULY">JULY</option>
-            <option value="AUGUST">AUGUST</option>
-            <option value="SEPTEMBER">SEPTEMBER</option>
-            <option value="OCTOBER">OCTOBER</option>
-            <option value="NOVEMBER">NOVEMBER</option>
-            <option value="DECEMBER">DECEMBER</option>
+          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Month</label>
+          <select
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            className="w-full bg-[#18181b] border border-zinc-800 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-amber-500"
+          >
+            {monthsList.map((m) => <option key={m} value={m}>{m}</option>)}
           </select>
         </div>
+
         <div>
-          <label className="block text-zinc-400 text-xs font-bold mb-2 uppercase">Year</label>
-          <select value={year} onChange={(e) => setYear(e.target.value)} className="bg-[#18181b] border border-zinc-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500 min-w-[150px]">
-            <option value="2025">2025</option>
+          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Year</label>
+          <select
+            value={year}
+            onChange={(e) => setYear(e.target.value)}
+            className="w-full bg-[#18181b] border border-zinc-800 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-amber-500"
+          >
             <option value="2026">2026</option>
-            <option value="2027">2027</option>
+            <option value="2025">2025</option>
           </select>
         </div>
+
         <div>
-          <label className="block text-zinc-400 text-xs font-bold mb-2 uppercase">Municipality</label>
-          <select value={municipality} onChange={(e) => setMunicipality(e.target.value)} className="bg-[#18181b] border border-zinc-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500 min-w-[200px]">
-            <option value="La Trinidad">La Trinidad</option>
-            <option value="Atok">Atok</option>
-            <option value="Baguio City">Baguio City</option>
+          <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Municipality</label>
+          <select
+            value={municipality}
+            onChange={(e) => setMunicipality(e.target.value)}
+            className="w-full bg-[#18181b] border border-zinc-800 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-amber-500"
+          >
+            {municipalitiesList.map((mun) => <option key={mun} value={mun}>{mun}</option>)}
           </select>
         </div>
       </div>
 
-      {/* DYNAMIC HEADER */}
-      <div className="text-center mb-8">
-        <h2 className="text-xl font-bold text-white mb-2">Month: {month} &nbsp;&nbsp; Year: {year}</h2>
-        <p className="text-zinc-400 uppercase tracking-widest text-sm">Municipality: {municipality}</p>
+      {/* Banner */}
+      <div className="text-center my-6">
+        <div className="text-zinc-400 text-sm font-semibold">Month: {month} &nbsp;&nbsp; Year: {year}</div>
+        <div className="text-white font-bold text-sm tracking-wider uppercase mt-1">
+          Municipality: {municipality}
+        </div>
       </div>
 
-      {/* THE DATA TABLE */}
+      {/* Table */}
       <div className="bg-[#18181b] border border-zinc-800 rounded-xl overflow-hidden mb-8">
-        <div className="overflow-x-auto">
-          <table className="w-full text-center border-collapse text-sm">
-            <thead>
-              <tr className="bg-[#27272a] border-b border-zinc-800 text-zinc-300 text-xs uppercase tracking-wider">
-                <th className="p-4 text-left font-semibold">Tourist Attraction</th>
-                <th className="p-4 font-semibold">This Municipality</th>
-                <th className="p-4 font-semibold">Other Municipality</th>
-                <th className="p-4 font-semibold">Other Province</th>
-                <th className="p-4 font-semibold">Foreign Country</th>
-                <th className="p-4 font-semibold">Unspecified</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800">
-              {filteredRecords.length === 0 ? (
-                <tr><td colSpan={6} className="p-8 text-zinc-500">No records found for this period.</td></tr>
-              ) : (
-                filteredRecords.map((record) => (
-                  <tr key={record.id} className="hover:bg-zinc-800/50 transition-colors">
-                    <td className="p-4 text-left">
-                      <div className="font-bold text-white uppercase">{record.name}</div>
-                    </td>
-                    <td className="p-4">
-                      <div className="font-bold text-white text-lg">{record.ga_ph_count || 0}</div>
-                      <div className="text-[10px] text-zinc-500">M: 0 | F: 0</div>
-                    </td>
-                    <td className="p-4">
-                      <div className="font-bold text-white text-lg">0</div>
-                      <div className="text-[10px] text-zinc-500">M: 0 | F: 0</div>
-                    </td>
-                    <td className="p-4">
-                      <div className="font-bold text-white text-lg">{record.ga_overseas_filipinos || 0}</div>
-                      <div className="text-[10px] text-zinc-500">M: 0 | F: 0</div>
-                    </td>
-                    <td className="p-4">
-                      <div className="font-bold text-white text-lg">{record.ga_non_fil_count || 0}</div>
-                      <div className="text-[10px] text-zinc-500">M: 0 | F: 0</div>
-                    </td>
-                    <td className="p-4">
-                      <div className="font-bold text-amber-500 text-lg">{record.ga_unspecified || 0}</div>
-                      <div className="text-[10px] text-zinc-500">M: 0 | F: 0</div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-            {/* FOOTER TOTALS */}
-            <tfoot>
-              <tr className="bg-[#27272a] border-t-2 border-zinc-700">
-                <td className="p-4 text-left font-bold text-white">TOTAL OF THIS MONTH:</td>
-                <td className="p-4">
-                  <div className="font-bold text-white text-lg">{totalPh}</div>
-                  <div className="text-[10px] text-zinc-500">M: 0 | F: 0</div>
-                </td>
-                <td className="p-4">
-                  <div className="font-bold text-white text-lg">0</div>
-                  <div className="text-[10px] text-zinc-500">M: 0 | F: 0</div>
-                </td>
-                <td className="p-4">
-                  <div className="font-bold text-white text-lg">{totalOverseas}</div>
-                  <div className="text-[10px] text-zinc-500">M: 0 | F: 0</div>
-                </td>
-                <td className="p-4">
-                  <div className="font-bold text-white text-lg">{totalForeign}</div>
-                  <div className="text-[10px] text-zinc-500">M: 0 | F: 0</div>
-                </td>
-                <td className="p-4">
-                  <div className="font-bold text-amber-500 text-lg">{totalUnspecified}</div>
-                  <div className="text-[10px] text-zinc-500">M: 0 | F: 0</div>
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+        <div className="grid grid-cols-6 bg-[#18181b] px-6 py-4 text-xs font-semibold text-zinc-400 uppercase tracking-wider text-center border-b border-zinc-800">
+          <div className="text-left">Tourist Attraction</div>
+          <div>This Municipality</div>
+          <div>Other Municipality</div>
+          <div>Other Province</div>
+          <div>Foreign Country</div>
+          <div>Unspecified</div>
         </div>
+
+        {filteredRecords.length === 0 ? (
+          <div className="p-12 text-center text-zinc-500">No records found for {municipality} in {month} {year}.</div>
+        ) : (
+          <div>
+            {filteredRecords.map((rec, i) => (
+              <div key={rec.id || i} className="grid grid-cols-6 px-6 py-4 border-b border-zinc-800 items-center text-center text-sm">
+                <div className="text-left">
+                  <div className="font-bold text-white">{rec.name || rec.attraction_name}</div>
+                  <div className="text-xs text-zinc-500">Code: {rec.code || rec.attraction_code || 'N/A'}</div>
+                </div>
+                <div className="text-zinc-300">
+                  <span className="font-bold text-white">{(rec.this_mun_male || 0) + (rec.this_mun_female || 0)}</span>
+                  <div className="text-xs text-zinc-500">M: {rec.this_mun_male || 0} | F: {rec.this_mun_female || 0}</div>
+                </div>
+                <div className="text-zinc-300">
+                  <span className="font-bold text-white">{(rec.other_mun_male || 0) + (rec.other_mun_female || 0)}</span>
+                  <div className="text-xs text-zinc-500">M: {rec.other_mun_male || 0} | F: {rec.other_mun_female || 0}</div>
+                </div>
+                <div className="text-zinc-300">
+                  <span className="font-bold text-white">{(rec.other_prov_male || 0) + (rec.other_prov_female || 0)}</span>
+                  <div className="text-xs text-zinc-500">M: {rec.other_prov_male || 0} | F: {rec.other_prov_female || 0}</div>
+                </div>
+                <div className="text-zinc-300">
+                  <span className="font-bold text-white">{(rec.foreign_male || 0) + (rec.foreign_female || 0)}</span>
+                  <div className="text-xs text-zinc-500">M: {rec.foreign_male || 0} | F: {rec.foreign_female || 0}</div>
+                </div>
+                <div className="text-zinc-300">
+                  <span className="font-bold text-white">{(rec.unspecified_male || 0) + (rec.unspecified_female || 0)}</span>
+                  <div className="text-xs text-zinc-500">M: {rec.unspecified_male || 0} | F: {rec.unspecified_female || 0}</div>
+                </div>
+              </div>
+            ))}
+
+            <div className="grid grid-cols-6 px-6 py-4 bg-[#18181b] items-center text-center font-bold text-white">
+              <div className="text-left uppercase">Total of this month:</div>
+              <div>
+                <div>{tableTotals.this_mun}</div>
+                <div className="text-xs text-zinc-500 font-normal">M: {tableTotals.this_mun_m} | F: {tableTotals.this_mun_f}</div>
+              </div>
+              <div>
+                <div>{tableTotals.other_mun}</div>
+                <div className="text-xs text-zinc-500 font-normal">M: {tableTotals.other_mun_m} | F: {tableTotals.other_mun_f}</div>
+              </div>
+              <div>
+                <div>{tableTotals.other_prov}</div>
+                <div className="text-xs text-zinc-500 font-normal">M: {tableTotals.other_prov_m} | F: {tableTotals.other_prov_f}</div>
+              </div>
+              <div>
+                <div>{tableTotals.foreign}</div>
+                <div className="text-xs text-zinc-500 font-normal">M: {tableTotals.foreign_m} | F: {tableTotals.foreign_f}</div>
+              </div>
+              <div>
+                <div>{tableTotals.unspec}</div>
+                <div className="text-xs text-zinc-500 font-normal">M: {tableTotals.unspec_m} | F: {tableTotals.unspec_f}</div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* THE CHARTS SECTION */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        
-        {/* Chart 1: Male vs Female */}
-        <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 flex flex-col items-center">
-          <h3 className="text-sm font-bold text-white mb-2 text-center">Male vs Female Visitors</h3>
-          <div className="h-48 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={genderData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={2} dataKey="value" stroke="none">
-                  {genderData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{ backgroundColor: '#27272a', borderColor: '#3f3f46', color: '#fff', borderRadius: '8px' }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="flex gap-4 text-[10px] text-zinc-400 mt-2 font-bold uppercase tracking-wider">
-            {genderData.map((d, i) => (
-              <span key={i} className="flex items-center gap-1"><div className="w-3 h-2 rounded-sm" style={{ backgroundColor: d.color }}></div>{d.name}</span>
-            ))}
+      {/* Analytics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 flex flex-col items-center justify-center min-h-[220px]">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-6">Male vs Female Visitors</h3>
+          <div className="relative w-32 h-32 rounded-full border-4 border-amber-500/20 flex items-center justify-center">
+            <div className="text-center">
+              <span className="text-xl font-bold text-white">{grandTotal}</span>
+              <div className="text-[10px] text-zinc-400">M: {totalMale} | F: {totalFemale}</div>
+            </div>
           </div>
         </div>
 
-        {/* Chart 2: Detailed Residence */}
-        <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 flex flex-col items-center">
-          <h3 className="text-sm font-bold text-white mb-2 text-center">Detailed Residence Breakdown</h3>
-          <div className="h-48 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={residenceData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={2} dataKey="value" stroke="none">
-                  {residenceData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{ backgroundColor: '#27272a', borderColor: '#3f3f46', color: '#fff', borderRadius: '8px' }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="flex flex-wrap justify-center gap-3 text-[10px] text-zinc-400 mt-2 font-bold uppercase tracking-wider">
-             {residenceData.map((d, i) => (
-              <span key={i} className="flex items-center gap-1"><div className="w-3 h-2 rounded-sm" style={{ backgroundColor: d.color }}></div>{d.name}</span>
-            ))}
+        <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 flex flex-col items-center justify-center min-h-[220px]">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-6">Detailed Residence Breakdown</h3>
+          <div className="flex gap-4 text-xs text-zinc-400 items-center justify-center flex-wrap">
+            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-amber-500"></span> Local: {totalLocal}</div>
+            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-blue-500"></span> Other Mun: {totalOtherMun}</div>
+            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-emerald-500"></span> Other Prov: {totalOtherProv}</div>
           </div>
         </div>
 
-        {/* Chart 3: Domestic vs Foreign */}
-        <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 flex flex-col items-center">
-          <h3 className="text-sm font-bold text-white mb-2 text-center">Domestic vs Foreign Tourists</h3>
-          <div className="h-48 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={domVsForData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={2} dataKey="value" stroke="none">
-                  {domVsForData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{ backgroundColor: '#27272a', borderColor: '#3f3f46', color: '#fff', borderRadius: '8px' }} />
-              </PieChart>
-            </ResponsiveContainer>
+        <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 flex flex-col items-center justify-center min-h-[220px]">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-6">Domestic vs Foreign Tourists</h3>
+          <div className="flex gap-6 text-center">
+            <div>
+              <div className="text-lg font-bold text-white">{totalDomestic}</div>
+              <div className="text-xs text-zinc-500">Domestic</div>
+            </div>
+            <div className="border-r border-zinc-800"></div>
+            <div>
+              <div className="text-lg font-bold text-amber-500">{totalForeign}</div>
+              <div className="text-xs text-zinc-500">Foreign</div>
+            </div>
           </div>
-          <div className="flex flex-wrap justify-center gap-4 text-[10px] text-zinc-400 mt-2 font-bold uppercase tracking-wider">
-             {domVsForData.map((d, i) => (
-              <span key={i} className="flex items-center gap-1"><div className="w-3 h-2 rounded-sm" style={{ backgroundColor: d.color }}></div>{d.name}</span>
-            ))}
-          </div>
-        </div>
-
-      </div>
-
-      {/* YEARLY TREND CHART */}
-      <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 shadow-sm">
-        <h3 className="text-sm font-bold text-white text-center mb-6">Visitors Per Month (Yearly Trend)</h3>
-        <div className="h-[300px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={yearlyData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-              <XAxis dataKey="name" stroke="#a1a1aa" fontSize={12} tickMargin={10} axisLine={false} tickLine={false} />
-              <YAxis stroke="#a1a1aa" fontSize={12} tickLine={false} axisLine={false} />
-              <Tooltip cursor={{ fill: '#27272a' }} contentStyle={{ backgroundColor: '#27272a', borderColor: '#3f3f46', color: '#fff', borderRadius: '8px' }} />
-              <Bar dataKey="visitors" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Total Visitors" />
-            </BarChart>
-          </ResponsiveContainer>
         </div>
       </div>
-
-    </div>
+    </>
   );
 }
