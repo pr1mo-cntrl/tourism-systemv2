@@ -33,7 +33,6 @@ export default function MonthlyReportClient({ initialRecords }: { initialRecords
       const dbMun = (r.municipality || "").trim().toUpperCase();
       const filterMun = municipality.trim().toUpperCase();
 
-      // STRICT MATCH ONLY - Removed the temporary debug hack
       return dbMonth === filterMonth && dbYear === filterYear && dbMun === filterMun;
     });
   }, [initialRecords, month, year, municipality]);
@@ -69,7 +68,7 @@ export default function MonthlyReportClient({ initialRecords }: { initialRecords
     unspec: 0, unspec_m: 0, unspec_f: 0
   });
 
-  // Calculate totals for Analytics Cards
+  // Calculate totals for Chart Logic
   const totalLocal = tableTotals.this_mun;
   const totalOtherMun = tableTotals.other_mun;
   const totalOtherProv = tableTotals.other_prov;
@@ -79,6 +78,15 @@ export default function MonthlyReportClient({ initialRecords }: { initialRecords
   const totalMale = tableTotals.this_mun_m + tableTotals.other_mun_m + tableTotals.other_prov_m + tableTotals.foreign_m + tableTotals.unspec_m;
   const totalFemale = tableTotals.this_mun_f + tableTotals.other_mun_f + tableTotals.other_prov_f + tableTotals.foreign_f + tableTotals.unspec_f;
   const grandTotal = totalMale + totalFemale;
+
+  // Chart Percentages & Scaling
+  const malePct = grandTotal > 0 ? (totalMale / grandTotal) * 100 : 0;
+  
+  const maxRes = Math.max(totalLocal, totalOtherMun, totalOtherProv, 1); // Avoid division by zero
+  
+  const totalDomFor = totalDomestic + totalForeign;
+  const domPct = totalDomFor > 0 ? (totalDomestic / totalDomFor) * 100 : 0;
+  const forPct = totalDomFor > 0 ? (totalForeign / totalDomFor) * 100 : 0;
 
   return (
     <>
@@ -208,41 +216,86 @@ export default function MonthlyReportClient({ initialRecords }: { initialRecords
         )}
       </div>
 
-      {/* Analytics Cards */}
+      {/* NEW ANALYTICS CHARTS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        {/* Card 1: CSS Donut Chart (Male vs Female) */}
         <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 flex flex-col items-center justify-center min-h-[220px]">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-6">Male vs Female Visitors</h3>
-          <div className="relative w-32 h-32 rounded-full border-4 border-amber-500/20 flex items-center justify-center">
-            <div className="text-center">
-              <span className="text-3xl font-bold text-white">{grandTotal}</span>
-              <div className="text-[10px] text-zinc-400 mt-1">M: {totalMale} | F: {totalFemale}</div>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-6">Male vs Female</h3>
+          <div 
+            className="relative w-32 h-32 rounded-full flex items-center justify-center transition-all duration-500"
+            style={{ 
+              background: grandTotal > 0 
+                ? `conic-gradient(#d97706 ${malePct}%, #8b5cf6 ${malePct}%)` 
+                : '#27272a' 
+            }}
+          >
+            <div className="absolute inset-2 bg-[#18181b] rounded-full flex flex-col items-center justify-center">
+              <span className="text-2xl font-bold text-white">{grandTotal}</span>
+              <span className="text-[10px] text-zinc-500 uppercase">Total</span>
+            </div>
+          </div>
+          <div className="flex gap-4 mt-6 text-xs">
+            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-amber-600"></span> <span className="text-zinc-300">Male: {totalMale}</span></div>
+            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-violet-500"></span> <span className="text-zinc-300">Female: {totalFemale}</span></div>
+          </div>
+        </div>
+
+        {/* Card 2: Vertical Bar Chart (Residence Breakdown) */}
+        <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 flex flex-col min-h-[220px]">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2 text-center">Residence Breakdown</h3>
+          <div className="flex items-end justify-center gap-6 h-32 w-full mt-auto mb-2 relative">
+            {/* Background Grid Lines Optional */}
+            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-10">
+              <div className="border-t border-zinc-500 w-full"></div>
+              <div className="border-t border-zinc-500 w-full"></div>
+              <div className="border-t border-zinc-500 w-full"></div>
+            </div>
+            
+            <div className="flex flex-col items-center gap-2 w-12 z-10">
+              <span className="text-xs font-medium text-white">{totalLocal}</span>
+              <div className="w-full bg-amber-500 rounded-t-sm transition-all duration-700" style={{ height: `${(totalLocal / maxRes) * 100}%`, minHeight: '4px' }}></div>
+              <span className="text-[10px] text-zinc-500 uppercase">Local</span>
+            </div>
+            <div className="flex flex-col items-center gap-2 w-12 z-10">
+              <span className="text-xs font-medium text-white">{totalOtherMun}</span>
+              <div className="w-full bg-blue-500 rounded-t-sm transition-all duration-700" style={{ height: `${(totalOtherMun / maxRes) * 100}%`, minHeight: '4px' }}></div>
+              <span className="text-[10px] text-zinc-500 uppercase">O. Mun</span>
+            </div>
+            <div className="flex flex-col items-center gap-2 w-12 z-10">
+              <span className="text-xs font-medium text-white">{totalOtherProv}</span>
+              <div className="w-full bg-emerald-500 rounded-t-sm transition-all duration-700" style={{ height: `${(totalOtherProv / maxRes) * 100}%`, minHeight: '4px' }}></div>
+              <span className="text-[10px] text-zinc-500 uppercase">O. Prov</span>
             </div>
           </div>
         </div>
 
-        <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 flex flex-col items-center justify-center min-h-[220px]">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-6">Detailed Residence Breakdown</h3>
-          <div className="flex gap-4 text-xs text-zinc-400 items-center justify-center flex-wrap">
-            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-amber-500"></span> Local: {totalLocal}</div>
-            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-blue-500"></span> Other Mun: {totalOtherMun}</div>
-            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-emerald-500"></span> Other Prov: {totalOtherProv}</div>
+        {/* Card 3: Horizontal Stacked Bar (Domestic vs Foreign) */}
+        <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 flex flex-col justify-center min-h-[220px]">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-8 text-center">Domestic vs Foreign</h3>
+          
+          <div className="flex justify-between items-end mb-3">
+            <div>
+              <div className="text-3xl font-bold text-zinc-300">{totalDomestic}</div>
+              <div className="text-[10px] text-zinc-500 uppercase mt-0.5">Domestic</div>
+            </div>
+            <div className="text-right">
+              <div className="text-3xl font-bold text-amber-500">{totalForeign}</div>
+              <div className="text-[10px] text-zinc-500 uppercase mt-0.5">Foreign</div>
+            </div>
+          </div>
+          
+          <div className="w-full h-4 bg-[#27272a] rounded-full overflow-hidden flex mt-2">
+            <div className="bg-zinc-500 h-full transition-all duration-700" style={{ width: `${domPct}%` }}></div>
+            <div className="bg-amber-500 h-full transition-all duration-700" style={{ width: `${forPct}%` }}></div>
+          </div>
+          
+          <div className="flex justify-between text-[10px] text-zinc-500 mt-2 font-medium">
+            <span>{Math.round(domPct)}%</span>
+            <span>{Math.round(forPct)}%</span>
           </div>
         </div>
 
-        <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 flex flex-col items-center justify-center min-h-[220px]">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-6">Domestic vs Foreign Tourists</h3>
-          <div className="flex gap-6 text-center">
-            <div>
-              <div className="text-2xl font-bold text-white">{totalDomestic}</div>
-              <div className="text-xs text-zinc-500 mt-1">Domestic</div>
-            </div>
-            <div className="border-r border-zinc-800"></div>
-            <div>
-              <div className="text-2xl font-bold text-amber-500">{totalForeign}</div>
-              <div className="text-xs text-zinc-500 mt-1">Foreign</div>
-            </div>
-          </div>
-        </div>
       </div>
     </>
   );
