@@ -1,8 +1,10 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { LayoutDashboard, FileText, Building2, Users, LogOut } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 import "./globals.css";
 
 export default function RootLayout({
@@ -11,7 +13,57 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const isLogin = pathname === "/login";
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [session, setSession] = useState<any>(null);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      setSession(currentSession);
+      if (!currentSession && !isLogin) {
+        router.push("/login");
+      } else if (currentSession && isLogin) {
+        router.push("/visitor-records");
+      }
+      setCheckingAuth(false);
+    };
+
+    checkUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      setSession(currentSession);
+      if (!currentSession && pathname !== "/login") {
+        router.push("/login");
+      } else if (currentSession && pathname === "/login") {
+        router.push("/visitor-records");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [pathname, router, isLogin]);
+
+  if (checkingAuth) {
+    return (
+      <html lang="en">
+        <body className="bg-[#09090b] text-white min-h-screen flex items-center justify-center">
+          <div className="text-zinc-400 text-sm animate-pulse">Loading Tourism System...</div>
+        </body>
+      </html>
+    );
+  }
+
+  // If user is not logged in and not on login page, block dashboard render completely
+  if (!session && !isLogin) {
+    return (
+      <html lang="en">
+        <body className="bg-[#09090b] text-white min-h-screen flex items-center justify-center">
+          <div className="text-zinc-400 text-sm animate-pulse">Redirecting to login...</div>
+        </body>
+      </html>
+    );
+  }
 
   return (
     <html lang="en">
@@ -72,13 +124,16 @@ export default function RootLayout({
 
               {/* Sidebar Footer / Sign Out */}
               <div className="pt-4 border-t border-zinc-800">
-                <Link 
-                  href="/login" 
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                <button 
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    router.push("/login");
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors text-left"
                 >
                   <LogOut size={18} />
                   Sign Out
-                </Link>
+                </button>
               </div>
             </aside>
 
