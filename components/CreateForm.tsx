@@ -21,6 +21,10 @@ export default function CreateForm() {
   const [noOfRooms, setNoOfRooms] = useState(0);
   const [roomsOccupied, setRoomsOccupied] = useState(0);
   
+  // STAFFS MALE AND FEMALE
+  const [maleStaff, setMaleStaff] = useState(0);
+  const [femaleStaff, setFemaleStaff] = useState(0);
+
   // Arrivals (Guests) State
   const [gaPh, setGaPh] = useState(0);
   const [gaNonFil, setGaNonFil] = useState(0);
@@ -427,6 +431,8 @@ export default function CreateForm() {
           year,
           no_of_rooms: noOfRooms,
           rooms_occupied: roomsOccupied,
+          male_staff: maleStaff,
+          female_staff: femaleStaff,
           ga_ph_count: gaPh,
           ga_non_fil_count: gaNonFil,
           ga_overseas_filipinos: gaOverseas,
@@ -564,9 +570,9 @@ export default function CreateForm() {
 
       </div>
 
-      {/* Rooms */}
-      <h2 className="text-xl text-white mb-6 font-semibold border-b border-zinc-800 pb-4">🏢 Capacity & Occupancy</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      {/* Capacity & Staffing */}
+      <h2 className="text-xl text-white mb-6 font-semibold border-b border-zinc-800 pb-4">🏢 Capacity & Staffing</h2>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div>
           <label className="block text-zinc-400 text-sm font-bold mb-2">Total Rooms Available</label>
           <input type="number" value={noOfRooms} onChange={(e) => setNoOfRooms(Number(e.target.value))} className="w-full bg-[#27272a] border border-zinc-700 text-white rounded-lg p-3 focus:outline-none focus:border-blue-500" />
@@ -574,6 +580,14 @@ export default function CreateForm() {
         <div>
           <label className="block text-zinc-400 text-sm font-bold mb-2">Rooms Occupied</label>
           <input type="number" value={roomsOccupied} onChange={(e) => setRoomsOccupied(Number(e.target.value))} className="w-full bg-[#27272a] border border-zinc-700 text-white rounded-lg p-3 focus:outline-none focus:border-blue-500" />
+        </div>
+        <div>
+          <label className="block text-zinc-400 text-sm font-bold mb-2">Male Staff</label>
+          <input type="number" value={maleStaff} onChange={(e) => setMaleStaff(Number(e.target.value))} className="w-full bg-[#27272a] border border-zinc-700 text-white rounded-lg p-3 focus:outline-none focus:border-violet-500" />
+        </div>
+        <div>
+          <label className="block text-zinc-400 text-sm font-bold mb-2">Female Staff</label>
+          <input type="number" value={femaleStaff} onChange={(e) => setFemaleStaff(Number(e.target.value))} className="w-full bg-[#27272a] border border-zinc-700 text-white rounded-lg p-3 focus:outline-none focus:border-pink-500" />
         </div>
       </div>
 
