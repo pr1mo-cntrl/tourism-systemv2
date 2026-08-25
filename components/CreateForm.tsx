@@ -506,13 +506,23 @@ export default function CreateForm() {
         {/* The Accommodation Type Box */}
         <div>
           <label className="block text-zinc-400 text-sm font-bold mb-2">Type</label>
-          <input 
-            type="text" 
+          <select 
+            required 
             value={accType} 
             onChange={(e) => setAccType(e.target.value)} 
-            className="w-full bg-[#27272a] border border-zinc-700 text-white rounded-lg p-3 focus:outline-none focus:border-blue-500" 
-            placeholder="e.g. HTL, HSS, OTH" 
-          />
+            className="w-full bg-[#27272a] border border-zinc-700 text-white rounded-lg p-3 focus:outline-none focus:border-blue-500 appearance-none"
+          >
+            <option value="" disabled>Select type...</option>
+            <option value="HTL">HTL - Hotel</option>
+            <option value="RST">RST - Resort</option>
+            <option value="HSS">HSS - Homestay</option>
+            <option value="TIN">TIN - Tourist Inn</option>
+            <option value="MAB">MAB - Mabuhay Accommodation</option>
+            <option value="APT">APT - Apartelle</option>
+            <option value="PEN">PEN - Pension House</option>
+            <option value="MOT">MOT - Motel</option>
+            <option value="OTH">OTH - Other</option>
+          </select>
         </div>
 
         {/* NEW: Month Dropdown */}
