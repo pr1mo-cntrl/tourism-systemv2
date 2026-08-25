@@ -20,8 +20,6 @@ export default async function AccommodationsPage() {
     <main className="min-h-screen bg-[#09090b] text-zinc-100 p-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 border-b border-zinc-800 pb-4">
-          <h1 className="text-3xl font-bold text-white">Accommodations Dashboard</h1>
-          <p className="text-zinc-400 mt-2">Live overview of all registered reporting locations.</p>
         </div>
 
         {/* Header */}
