@@ -48,10 +48,7 @@ export default function MonthlyReportClient({ initialRecords }: MonthlyReportCli
   ];
 
   useEffect(() => {
-    // Skip fetching on initial render if initial data matches default filters
-    if (month === "AUGUST" && year === "2026" && municipality === "Atok") {
-        return;
-    }
+    let isMounted = true;
 
     const fetchReportData = async () => {
       setLoading(true);
@@ -64,13 +61,22 @@ export default function MonthlyReportClient({ initialRecords }: MonthlyReportCli
 
       if (error) {
         console.error("Error fetching report data:", error.message);
-      } else {
+      } else if (isMounted) {
         setRecords(data || []);
       }
-      setLoading(false);
+      if (isMounted) {
+        setLoading(false);
+      }
     };
 
+    // If the initial records haven't been touched and the filters match the defaults,
+    // we can skip the first fetch to save a request.
+    // However, to ensure it works reliably when filters change, we will just fetch.
     fetchReportData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [month, year, municipality]);
 
   // Aggregate stats
