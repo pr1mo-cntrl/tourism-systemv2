@@ -4,14 +4,14 @@ import MonthlyReportClient from '@/components/MonthlyReportClient'
 export const revalidate = 0;
 
 export default async function MonthlyReport() {
-  // Fetch ALL records so our Client Component can filter them instantly
+  // Fetch ALL records from 'visitor_records' so our Client Component can filter them instantly
   const { data: records, error } = await supabase
-    .from('accommodations')
+    .from('visitor_records')
     .select('*')
-    .order('name', { ascending: true });
+    .order('attraction_name', { ascending: true });
 
   if (error) {
-    return <div className="p-10 text-red-500 font-bold">Error loading records.</div>;
+    return <div className="p-10 text-red-500 font-bold">Error loading records: {error.message}</div>;
   }
 
   return (
