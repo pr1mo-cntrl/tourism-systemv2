@@ -24,17 +24,19 @@ export default function MonthlyReportPage() {
   useEffect(() => {
     const fetchReportData = async () => {
       setLoading(true);
-      // Using .ilike for case-insensitive matching so records load properly
+      
+      // Converting year to Number in case the database column is an integer type
       const { data, error } = await supabase
         .from("visitor_records")
         .select("*")
         .ilike("month", month)
-        .eq("year", year)
+        .eq("year", Number(year))
         .ilike("municipality", municipality);
 
       if (error) {
         console.error("Error fetching report data:", error.message);
       } else {
+        console.log("Fetched records:", data);
         setRecords(data || []);
       }
       setLoading(false);
