@@ -19,7 +19,7 @@ export default function MonthlyReportClient({ initialRecords }: { initialRecords
     "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
   ];
 
-  // Bulletproof filtering: case-insensitive and trims whitespace
+  // Strict filtering: case-insensitive and trims whitespace
   const filteredRecords = useMemo(() => {
     if (!initialRecords || !Array.isArray(initialRecords)) return [];
     
@@ -30,16 +30,11 @@ export default function MonthlyReportClient({ initialRecords }: { initialRecords
       const dbYear = (r.year || "").toString().trim();
       const filterYear = year.trim();
       
-      // If dbMun is empty, we force it to match so we can at least see the broken records!
       const dbMun = (r.municipality || "").trim().toUpperCase();
       const filterMun = municipality.trim().toUpperCase();
 
-      const isMonthMatch = dbMonth === filterMonth;
-      const isYearMatch = dbYear === filterYear;
-      // If DB has no municipality, temporarily show it anyway so we know it exists
-      const isMunMatch = dbMun === filterMun || dbMun === ""; 
-
-      return isMonthMatch && isYearMatch && isMunMatch;
+      // STRICT MATCH ONLY - Removed the temporary debug hack
+      return dbMonth === filterMonth && dbYear === filterYear && dbMun === filterMun;
     });
   }, [initialRecords, month, year, municipality]);
 
