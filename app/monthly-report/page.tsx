@@ -59,7 +59,7 @@ export default function MonthlyReportPage() {
     fetchReportData();
   }, [month, year, municipality]);
 
-  // Calculate aggregated totals
+  // Calculate aggregated totals for dashboard cards
   const totals = records.reduce(
     (acc, curr) => {
       acc.this_mun_m += curr.this_mun_male || 0;
@@ -78,7 +78,7 @@ export default function MonthlyReportPage() {
       this_mun_m: 0, this_mun_f: 0,
       other_mun_m: 0, other_mun_f: 0,
       other_prov_m: 0, other_prov_f: 0,
-      foreign_m: 0, foreign_m_f: 0,
+      foreign_m: 0, foreign_f: 0,
       unspecified_m: 0, unspecified_f: 0
     }
   );
@@ -86,12 +86,25 @@ export default function MonthlyReportPage() {
   const totalThisMun = totals.this_mun_m + totals.this_mun_f;
   const totalOtherMun = totals.other_mun_m + totals.other_mun_f;
   const totalOtherProv = totals.other_prov_m + totals.other_prov_f;
-  const totalForeign = totals.foreign_m + totals.foreign_m_f;
+  const totalForeign = totals.foreign_m + totals.foreign_f;
   const totalUnspecified = totals.unspecified_m + totals.unspecified_f;
 
   const grandTotal = totalThisMun + totalOtherMun + totalOtherProv + totalForeign + totalUnspecified;
   const totalMale = totals.this_mun_m + totals.other_mun_m + totals.other_prov_m + totals.foreign_m + totals.unspecified_m;
-  const totalFemale = totals.this_mun_f + totals.other_mun_f + totals.other_prov_f + (totals.foreign_m_f || 0) + totals.unspecified_f;
+  const totalFemale = totals.this_mun_f + totals.other_mun_f + totals.other_prov_f + totals.foreign_f + totals.unspecified_f;
+
+  // Table total sum row calculation
+  const tableTotals = records.reduce(
+    (acc, curr) => {
+      acc.this_mun += (curr.this_mun_male || 0) + (curr.this_mun_female || 0);
+      acc.other_mun += (curr.other_mun_male || 0) + (curr.other_mun_female || 0);
+      acc.other_prov += (curr.other_prov_male || 0) + (curr.other_prov_female || 0);
+      acc.foreign += (curr.foreign_male || 0) + (curr.foreign_female || 0);
+      acc.unspecified += (curr.unspecified_male || 0) + (curr.unspecified_female || 0);
+      return acc;
+    },
+    { this_mun: 0, other_mun: 0, other_prov: 0, foreign: 0, unspecified: 0 }
+  );
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -150,6 +163,14 @@ export default function MonthlyReportPage() {
         </div>
       </div>
 
+      {/* Report Banner */}
+      <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 mb-8 text-center">
+        <h2 className="text-sm font-semibold tracking-wider text-amber-500 uppercase mb-1">Province of Benguet • Tourism Division</h2>
+        <p className="text-white font-bold text-lg">
+          MONTHLY VISITOR ARRIVAL REPORT — {month} {year} | MUNICIPALITY: {municipality.toUpperCase()}
+        </p>
+      </div>
+
       {/* Top Total Statistics Bar */}
       <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 mb-8 grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
         <div className="border-r border-zinc-800 last:border-none">
@@ -170,7 +191,7 @@ export default function MonthlyReportPage() {
         <div className="border-r border-zinc-800 last:border-none">
           <div className="text-xs text-zinc-400 uppercase font-semibold mb-1">Foreign</div>
           <div className="text-xl font-bold text-white">{totalForeign}</div>
-          <div className="text-xs text-zinc-500">M: {totals.foreign_m} | F: {totals.foreign_m_f || 0}</div>
+          <div className="text-xs text-zinc-500">M: {totals.foreign_m} | F: {totals.foreign_f}</div>
         </div>
         <div>
           <div className="text-xs text-zinc-400 uppercase font-semibold mb-1">Total Visitors</div>
@@ -216,11 +237,67 @@ export default function MonthlyReportPage() {
         </div>
       </div>
 
+      {/* Data Table Section */}
+      <div className="bg-[#18181b] border border-zinc-800 rounded-xl overflow-hidden mb-12">
+        <div className="grid grid-cols-6 bg-[#27272a] px-6 py-4 text-xs font-semibold text-zinc-400 uppercase tracking-wider text-center">
+          <div className="text-left">Tourist Attraction</div>
+          <div>This Municipality</div>
+          <div>Other Municipality</div>
+          <div>Other Province</div>
+          <div>Foreign Country</div>
+          <div>Unspecified</div>
+        </div>
+
+        {loading ? (
+          <div className="p-12 text-center text-zinc-500">Loading records...</div>
+        ) : records.length === 0 ? (
+          <div className="p-12 text-center text-zinc-500">No records found for {municipality} in {month} {year}.</div>
+        ) : (
+          <div>
+            {records.map((rec) => (
+              <div key={rec.id} className="grid grid-cols-6 px-6 py-4 border-t border-zinc-800 items-center text-center text-sm">
+                <div className="text-left font-medium text-white">{rec.attraction_name}</div>
+                <div className="text-zinc-300">
+                  <span className="font-bold text-white">{(rec.this_mun_male || 0) + (rec.this_mun_female || 0)}</span>
+                  <div className="text-xs text-zinc-500">M: {rec.this_mun_male || 0} | F: {rec.this_mun_female || 0}</div>
+                </div>
+                <div className="text-zinc-300">
+                  <span className="font-bold text-white">{(rec.other_mun_male || 0) + (rec.other_mun_female || 0)}</span>
+                  <div className="text-xs text-zinc-500">M: {rec.other_mun_male || 0} | F: {rec.other_mun_female || 0}</div>
+                </div>
+                <div className="text-zinc-300">
+                  <span className="font-bold text-white">{(rec.other_prov_male || 0) + (rec.other_prov_female || 0)}</span>
+                  <div className="text-xs text-zinc-500">M: {rec.other_prov_male || 0} | F: {rec.other_prov_female || 0}</div>
+                </div>
+                <div className="text-zinc-300">
+                  <span className="font-bold text-white">{(rec.foreign_male || 0) + (rec.foreign_female || 0)}</span>
+                  <div className="text-xs text-zinc-500">M: {rec.foreign_male || 0} | F: {rec.foreign_female || 0}</div>
+                </div>
+                <div className="text-zinc-300">
+                  <span className="font-bold text-white">{(rec.unspecified_male || 0) + (rec.unspecified_female || 0)}</span>
+                  <div className="text-xs text-zinc-500">M: {rec.unspecified_male || 0} | F: {rec.unspecified_female || 0}</div>
+                </div>
+              </div>
+            ))}
+
+            {/* Total Row */}
+            <div className="grid grid-cols-6 px-6 py-4 bg-[#27272a]/50 border-t-2 border-zinc-700 items-center text-center font-bold text-white">
+              <div className="text-left">TOTAL OF THIS MONTH:</div>
+              <div>{tableTotals.this_mun}</div>
+              <div>{tableTotals.other_mun}</div>
+              <div>{tableTotals.other_prov}</div>
+              <div>{tableTotals.foreign}</div>
+              <div>{tableTotals.unspecified}</div>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Yearly Trend Chart Box */}
       <div className="bg-[#18181b] border border-zinc-800 rounded-xl p-6 mb-12">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-400 text-center mb-8">Visitors Per Month (Yearly Trend)</h3>
         <div className="h-40 flex items-end justify-between px-4 border-b border-zinc-800 pb-2">
-          {yearlyMonths.map((m, idx) => (
+          {yearlyMonths.map((m) => (
             <div key={m} className="flex flex-col items-center gap-2 flex-1">
               <div className="w-4 bg-zinc-800 rounded-t h-2 hover:bg-amber-500 transition-colors"></div>
               <span className="text-[10px] text-zinc-500">{m}</span>
