@@ -74,19 +74,6 @@ export default function MonthlyReportPage() {
   const totalMale = totalThisMunM + totalOtherMunM + totalOtherProvM + totalForeignM + totalUnspecM;
   const totalFemale = totalThisMunF + totalOtherMunF + totalOtherProvF + totalForeignF + totalUnspecF;
 
-  const genderData = [
-    { name: "Male", value: totalMale, color: "#3b82f6" },
-    { name: "Female", value: totalFemale, color: "#ec4899" }
-  ];
-
-  const residenceData = [
-    { name: "This Mun.", value: grandTotalThis, color: "#10b981" },
-    { name: "Other Mun.", value: grandTotalOtherMun, color: "#3b82f6" },
-    { name: "Other Prov.", value: grandTotalOtherProv, color: "#f59e0b" },
-    { name: "Foreign", value: grandTotalForeign, color: "#8b5cf6" },
-    { name: "Unspecified", value: grandTotalUnspec, color: "#6b7280" }
-  ];
-
   return (
     <main className="p-8 max-w-7xl mx-auto">
       
