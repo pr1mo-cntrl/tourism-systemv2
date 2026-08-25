@@ -1,30 +1,34 @@
-import { supabase } from '@/lib/supabase'
-import MonthlyReportClient from '@/components/MonthlyReportClient'
+import { supabase } from "@/lib/supabase";
+import MonthlyReportClient from "@/components/MonthlyReportClient";
 
-export const revalidate = 0;
+export const dynamic = "force-dynamic";
 
-export default async function MonthlyReport() {
-  // Fetch ALL records from 'visitor_records' so our Client Component can filter them instantly
-  const { data: records, error } = await supabase
-    .from('visitor_records')
-    .select('*')
-    .order('attraction_name', { ascending: true });
+export default async function MonthlyReportPage() {
+  // Fetch initial data (e.g., for default month/year/municipality)
+  const defaultMonth = "AUGUST";
+  const defaultYear = "2026";
+  const defaultMunicipality = "Atok";
+
+  const { data: initialRecords, error } = await supabase
+    .from("visitor_records")
+    .select("*")
+    .eq("month", defaultMonth)
+    .eq("year", defaultYear)
+    .eq("municipality", defaultMunicipality);
 
   if (error) {
-    return <div className="p-10 text-red-500 font-bold">Error loading records: {error.message}</div>;
+    console.error("Error fetching initial report data:", error.message);
   }
 
   return (
-    <main className="p-8 max-w-7xl mx-auto min-h-screen">
-      
+    <main className="p-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-2 border-b border-zinc-800 pb-4">
         <h1 className="text-3xl font-bold text-white">Monthly Report</h1>
       </div>
 
       {/* Inject our interactive UI */}
-      <MonthlyReportClient initialRecords={records || []} />
-
+      <MonthlyReportClient initialRecords={initialRecords || []} />
     </main>
   );
 }

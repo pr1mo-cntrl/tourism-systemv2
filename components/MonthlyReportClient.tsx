@@ -4,12 +4,16 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Download } from "lucide-react";
 
-export default function MonthlyReportPage() {
+interface MonthlyReportClientProps {
+  initialRecords: any[];
+}
+
+export default function MonthlyReportClient({ initialRecords }: MonthlyReportClientProps) {
   const [month, setMonth] = useState("AUGUST");
   const [year, setYear] = useState("2026");
   const [municipality, setMunicipality] = useState("Atok");
-  const [records, setRecords] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [records, setRecords] = useState<any[]>(initialRecords);
+  const [loading, setLoading] = useState(false);
 
   // All 13 official municipalities of Benguet (excluding Baguio City)
   const benguetMunicipalities = [
@@ -44,6 +48,11 @@ export default function MonthlyReportPage() {
   ];
 
   useEffect(() => {
+    // Skip fetching on initial render if initial data matches default filters
+    if (month === "AUGUST" && year === "2026" && municipality === "Atok") {
+        return;
+    }
+
     const fetchReportData = async () => {
       setLoading(true);
       const { data, error } = await supabase
@@ -91,11 +100,10 @@ export default function MonthlyReportPage() {
   const grandTotalUnspec = totalUnspecM + totalUnspecF;
 
   return (
-    <main className="p-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
+    <>
+      {/* Header Controls */}
+      <div className="flex justify-between items-center mb-8 mt-6">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-1">Official Monthly Report</h1>
           <p className="text-sm text-zinc-400">Department of Tourism - Provincial Statistics Generation</p>
         </div>
         <button 
@@ -222,6 +230,6 @@ export default function MonthlyReportPage() {
           </table>
         </div>
       </div>
-    </main>
+    </>
   );
 }
