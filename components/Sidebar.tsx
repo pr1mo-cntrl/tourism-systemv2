@@ -10,8 +10,8 @@ export default function Sidebar() {
   const navItems = [
     { name: "Dashboard", href: "/", icon: <Home size={20} /> },
     { name: "Official Monthly Report", href: "/monthly-report", icon: <FileText size={20} /> },
-    { name: "Accommodations", href: "/accommodations", icon: <Building2 size={20} /> },
     { name: "Visitor Records", href: "/visitor-records", icon: <Users size={20} /> },
+    { name: "Accommodations", href: "/accommodations", icon: <Building2 size={20} /> },
   ];
 
   return (
