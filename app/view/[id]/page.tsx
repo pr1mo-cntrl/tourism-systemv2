@@ -29,8 +29,9 @@ export default async function ViewAccommodation({ params }: { params: Promise<{ 
     );
   }
 
-  const phProv = record.ga_ph_province || 'N/A';
-  const forCountry = record.ga_non_fil_country || 'N/A';
+  const phProv = record.filipino_origin || 'N/A';
+  const forCountry = record.foreign_origin || 'N/A';
+  const overseasOrigin = record.overseas_origin || 'N/A';
 
   return (
     <main className="min-h-screen bg-[#09090b] text-zinc-100 p-8">
@@ -83,15 +84,14 @@ export default async function ViewAccommodation({ params }: { params: Promise<{ 
               <h4 className="text-zinc-400 text-xs uppercase tracking-wider mb-1">Total Rooms Available</h4>
               <p className="text-2xl font-bold text-white">{record.no_of_rooms || 0}</p>
             </div>
-            <div className="bg-[#27272a] p-4 rounded-lg border-l-4 border-purple-500">
+           <div className="bg-[#27272a] p-4 rounded-lg border-l-4 border-purple-500">
               <h4 className="text-zinc-400 text-xs uppercase tracking-wider mb-1">Male Staff</h4>
-              <p className="text-2xl font-bold text-white">{record.male_employees || 0}</p>
+              <p className="text-2xl font-bold text-white">{record.male_staff || 0}</p>
             </div>
             <div className="bg-[#27272a] p-4 rounded-lg border-l-4 border-pink-500">
               <h4 className="text-zinc-400 text-xs uppercase tracking-wider mb-1">Female Staff</h4>
-              <p className="text-2xl font-bold text-white">{record.female_employees || 0}</p>
+              <p className="text-2xl font-bold text-white">{record.female_staff || 0}</p>
             </div>
-          </div>
 
           {/* Guest Arrivals Grid */}
           <h3 className="text-xl text-white mb-4 font-semibold">👥 Guest Arrivals Breakdown</h3>
@@ -120,7 +120,8 @@ export default async function ViewAccommodation({ params }: { params: Promise<{ 
                 <h4 className="text-white font-bold m-0">🌍 Overseas Filipinos</h4>
                 <span className="bg-amber-500 text-black px-3 py-1 rounded-full text-xs font-bold">{record.ga_overseas_filipinos || 0} Guests</span>
               </div>
-              <p className="text-zinc-400 text-sm m-0"><strong>Nights Stayed:</strong> {record.gn_overseas_filipinos || 0}</p>
+              <p className="text-zinc-400 text-sm mb-1"><strong>Nights Stayed:</strong> {record.gn_overseas_filipinos || 0}</p>
+              <p className="text-zinc-400 text-sm m-0"><strong>From:</strong> {overseasOrigin}</p>
             </div>
 
             <div className="bg-[#27272a] p-5 rounded-lg">
