@@ -655,22 +655,6 @@ export default function CreateVisitorRecord() {
               </div>
             </div>
           </div>
-
-          {/* Unspecified Residence */}
-          <div className="bg-[#27272a] p-4 rounded-lg border border-zinc-700/50 md:col-span-2">
-            <h4 className="text-amber-500 font-semibold text-sm mb-3">Unspecified Residence</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-zinc-400 text-xs font-medium mb-1">Male</label>
-                <input type="number" min="0" value={unspecM} onChange={(e) => setUnspecM(Number(e.target.value))} className="w-full bg-[#18181b] border border-zinc-700 text-white rounded-lg p-2.5 focus:outline-none focus:border-amber-500" />
-              </div>
-              <div>
-                <label className="block text-zinc-400 text-xs font-medium mb-1">Female</label>
-                <input type="number" min="0" value={unspecF} onChange={(e) => setUnspecF(Number(e.target.value))} className="w-full bg-[#18181b] border border-zinc-700 text-white rounded-lg p-2.5 focus:outline-none focus:border-amber-500" />
-              </div>
-            </div>
-          </div>
-
         </div>
 
         {/* Form Actions */}
