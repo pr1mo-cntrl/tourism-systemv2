@@ -664,15 +664,30 @@ export default function CreateForm() {
       </div>
 
       {/* Auto-Calculating Grand Totals */}
-      <div className="grid grid-cols-2 gap-6 mb-8">
-        <div className="bg-[#27272a] border-l-4 border-amber-500 p-5 rounded-lg flex justify-between items-center">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        
+        {/* Total Guests (Overall) */}
+        <div className="bg-[#27272a] border-l-4 border-amber-500 p-5 rounded-lg flex justify-between items-center shadow-sm">
           <div><h4 className="text-white font-bold">Total Guests</h4></div>
           <div className="text-3xl font-bold text-amber-500">{totalGuests}</div>
         </div>
-        <div className="bg-[#27272a] border-l-4 border-amber-500 p-5 rounded-lg flex justify-between items-center">
-          <div><h4 className="text-white font-bold">Total Nights</h4></div>
-          <div className="text-3xl font-bold text-amber-500">{totalNights}</div>
+
+        {/* Filipino Nights (Philippine Residents + Overseas) */}
+        <div className="bg-[#27272a] border-l-4 border-emerald-500 p-5 rounded-lg flex justify-between items-center shadow-sm">
+          <div><h4 className="text-white font-bold">Filipino Nights</h4></div>
+          <div className="text-3xl font-bold text-emerald-500">
+            {Number(gnPh) + Number(gnOverseas) + Number(gnUnspecified)}
+          </div>
         </div>
+
+        {/* Foreign Nights (Non-Philippine Residents) */}
+        <div className="bg-[#27272a] border-l-4 border-blue-500 p-5 rounded-lg flex justify-between items-center shadow-sm">
+          <div><h4 className="text-white font-bold">Foreign Nights</h4></div>
+          <div className="text-3xl font-bold text-blue-500">
+            {Number(gnNonFil)}
+          </div>
+        </div>
+
       </div>
 
       <div className="flex justify-end gap-4 border-t border-zinc-800 pt-6">
