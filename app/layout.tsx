@@ -25,7 +25,8 @@ export default function RootLayout({
       if (!currentSession && !isLogin) {
         router.push("/login");
       } else if (currentSession && isLogin) {
-        router.push("/visitor-records");
+        // FIXED: Now redirects to Dashboard instead of visitor-records
+        router.push("/");
       }
       setCheckingAuth(false);
     };
@@ -37,7 +38,8 @@ export default function RootLayout({
       if (!currentSession && pathname !== "/login") {
         router.push("/login");
       } else if (currentSession && pathname === "/login") {
-        router.push("/visitor-records");
+        // FIXED: Now redirects to Dashboard instead of visitor-records
+        router.push("/"); 
       }
     });
 
@@ -101,15 +103,8 @@ export default function RootLayout({
                     <FileText size={18} />
                     Official Monthly Report
                   </Link>
-                  <Link 
-                    href="/accommodations" 
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      pathname.startsWith("/accommodations") ? "bg-amber-600/10 text-amber-500" : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
-                    }`}
-                  >
-                    <Building2 size={18} />
-                    Accommodations
-                  </Link>
+
+                  {/* MOVED: Visitor Records is now above Accommodations */}
                   <Link 
                     href="/visitor-records" 
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
@@ -118,6 +113,16 @@ export default function RootLayout({
                   >
                     <Users size={18} />
                     Visitor Records
+                  </Link>
+                  
+                  <Link 
+                    href="/accommodations" 
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      pathname.startsWith("/accommodations") ? "bg-amber-600/10 text-amber-500" : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
+                    }`}
+                  >
+                    <Building2 size={18} />
+                    Accommodations
                   </Link>
                 </nav>
               </div>
