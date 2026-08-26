@@ -5,12 +5,17 @@ import AnalyticsCharts from '@/components/AnalyticsCharts'
 export const revalidate = 0;
 
 export default async function AnalyticsDashboard() {
-  // Fetch all data for the analytics engine
-  const { data: accommodations, error } = await supabase
+  // 1. Fetch accommodations data
+  const { data: accommodations, error: accError } = await supabase
     .from('accommodations')
     .select('*');
 
-  if (error) {
+  // 2. Fetch attractions data (visitor records)
+  const { data: visitorRecords, error: visError } = await supabase
+    .from('visitor_records')
+    .select('*');
+
+  if (accError || visError) {
     return <div className="p-10 text-red-500 font-bold">Error loading data from Supabase. Check your terminal.</div>;
   }
 
@@ -26,8 +31,11 @@ export default async function AnalyticsDashboard() {
       {/* The 3 Top Summary Boxes */}
       <StatsOverview accommodations={accommodations || []} />
 
-      {/* The New Interactive Recharts */}
-      <AnalyticsCharts accommodations={accommodations || []} />
+      {/* The New Interactive Recharts - Now with BOTH datasets! */}
+      <AnalyticsCharts 
+        accommodations={accommodations || []} 
+        visitorRecords={visitorRecords || []} 
+      />
 
     </main>
   );
